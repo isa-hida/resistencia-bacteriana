@@ -1,0 +1,44 @@
+# IMPORTANTE: en YAML escribir exponentes con signo: 1.0e+8 (no 1.0e8), o PyYAML lo lee como texto.
+# Parámetros nominales (fuente única de verdad). Unidades: tiempo en días.
+nominal:
+  rS: 1.0
+  rT: 0.9
+  rR: 0.8          # coste de fitness
+  dS: 2.0          # muerte por unidad de concentración
+  dT: 0.5
+  dR: 0.1
+  muST: 1.0e-4
+  muTR: 1.0e-5
+  K: 1.0e+8
+  x0: {S: 1.0e+7, T: 1.0e+3, R: 1.0e+1}
+
+scenarios:
+  A:   # tratamiento único sin recuperación
+    dt_horas: 2.4          # 0.1 día
+    duracion_dias: 5
+    esquema: constante
+    C: 1.0
+  B:   # ciclos 3 h con antibiótico + 21 h sin
+    dt_horas: 0.5
+    duracion_dias: 20
+    esquema: ciclico
+    C: 5.0
+    horas_exposicion: 3
+  C:   # mutación metabólica (muST sube, muTR baja)
+    dt_horas: 0.5
+    duracion_dias: 20
+    esquema: ciclico
+    C: 5.0
+    horas_exposicion: 3
+    override: {muST: 1.0e-3, muTR: 1.0e-6}   # AJUSTAR y justificar
+  D:   # estimación con Kalman
+    dt_horas: 0.5
+    duracion_dias: 20
+    esquema: ciclico
+    C: 5.0
+    horas_exposicion: 3
+    kalman:
+      sigma_obs_rel: 0.10   # error relativo de conteo de placas
+      q_rel: 0.02           # ruido de proceso relativo
+  E:   # datos de literatura (pendiente: obtener referencias)
+    nota: "Completar con datos de ALE con ofloxacino"
