@@ -24,13 +24,13 @@ scenarios:
     esquema: ciclico
     C: 5.0
     horas_exposicion: 3
-  C:   # mutación metabólica (muST sube, muTR baja)
-    dt_horas: 0.5
-    duracion_dias: 20
+  C:   # mutación metabólica (muST sube x10, muTR baja x10 respecto a B)
+    dt_horas: 0.0625
+    duracion_dias: 100
     esquema: ciclico
     C: 5.0
     horas_exposicion: 3
-    override: {muST: 1.0e-3, muTR: 1.0e-6}   # AJUSTAR y justificar
+    override: {muST: 1.0e-3, muTR: 1.0e-6}
   D:   # estimación con Kalman
     dt_horas: 0.5
     duracion_dias: 20
