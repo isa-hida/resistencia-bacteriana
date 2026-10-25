@@ -2,8 +2,6 @@
 from pathlib import Path
 import numpy as np
 import yaml
-import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,7 +30,8 @@ def load_params(scenario="B"):
 def concentracion(t_dias, sc):
     if sc["esquema"] == "constante":
         return sc["C"]
-    hora = (t_dias % 1.0) * 24.0
+    # +1e-9 dias compensa la deriva de punto flotante (si no, se pierde un paso de exposicion)
+    hora = ((t_dias + 1e-9) % 1.0) * 24.0
     return sc["C"] if hora < sc["horas_exposicion"] else 0.0
 
 
@@ -61,7 +60,7 @@ def simulate(scenario="B", p=None, sc=None):
     C = np.zeros(n)
     X[0] = [p["x0"]["S"], p["x0"]["T"], p["x0"]["R"]]
     for k in range(1, n):
-        C[k] = concentracion(t[k], sc)
+        C[k] = concentracion(t[k - 1], sc)   # C vigente durante el paso k-1 -> k (inicio del paso)
         X[k] = step(X[k - 1], C[k], dt, p)
     return t, X, C, dt
 

@@ -4,8 +4,6 @@ F_k = I + dt * J_f(x_hat, C_k)  (jacobiano numérico de euler_model.rates)
 Observaciones: conteos de placas de S y R (T no se mide directamente).
 """
 import numpy as np
-import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from .euler_model import load_params, simulate, rates, step, ROOT
 
