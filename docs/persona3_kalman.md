@@ -1,37 +1,26 @@
-# Persona 3: Kalman y estimación
+# Persona 3: filtro de Kalman
 
-Ejecutar desde la raíz del repositorio:
+`python -m src.kalman` genera el caso **nominal** sin medir T:
+`figures/persona3/sin_medir_T.png` y `data/persona3/sin_medir_T.csv`. Usa `q_rel=0.02` del escenario D en `params.yaml` y
+`factor_R=1`. El código del EKF está en `src/filtro_kalman.py`.
 
-```bash
-python -m src.kalman
-python -m unittest discover -s tests
-```
+El trabajo explicado está en `notebooks/04_kalman_estimacion.ipynb`.
+Euler proporciona la trayectoria real sintética. Se miden S y R y se estima T sin observarla. F es el jacobiano
+numérico del avance de Euler; Q representa incertidumbre del modelo, R la
+del sensor y P la del estado estimado.
 
-Los CSV con datos sintéticos quedan en `data/persona3/`; las gráficas en
-`figures/persona3/`. Un valor `NaN` en T_medida significa que no se midió.
+El notebook compara 20 combinaciones de Q y R con las semillas 0–4. Elige
+la de menor RMSE de T entre las que dan una cobertura empírica de 93.5% a
+96.5%, e informa también la anchura media del intervalo. Las semillas 5–9
+sirven para verificar error, cobertura y convergencia sin participar en
+la elección. Los parámetros ajustados se guardan por separado en
+`data/persona3/ajustado_sin_T.csv` y `figures/persona3/ajustado_sin_T.png`.
 
-El desarrollo explicado está en `notebooks/02_kalman_estimacion.ipynb`.
-El código del filtro está en `src/filtro_kalman.py`.
+Este ajuste es válido solo para el simulador empleado. Como la trayectoria
+real y la predicción usan el mismo Euler determinista, Q puede resultar cero.
+Eso no implica ruido de proceso nulo en un experimento de laboratorio.
+Tampoco identifica Q y R verdaderas: con datos reales habría que estimar
+la incertidumbre de las mediciones y comprobar de nuevo los intervalos.
 
-**Estado:** `[S,T,R]` en UFC/mL. Los estados reales vienen directamente del
-escenario D del Euler del equipo. Se añaden mediciones gaussianas sintéticas.
-Primero se miden las tres poblaciones (`H=I`); también se ensaya medir solo
-S y R. `R` es la varianza del sensor, `Q` la incertidumbre de la predicción y
-`P` la incertidumbre del estado estimado. Se toman matrices diagonales.
-El prior es `[1.2*S0,0.8*T0,1.3*R0]`, con desviación inicial del 50%.
-
-El EKF usa el avance de Euler como función de transición. Calcula su jacobiano
-numéricamente y aplica predicción y corrección. El RMSE compara estimación y
-verdad por población, en UFC/mL. Las gráficas muestran las mediciones y un
-intervalo gaussiano aproximado del 95%.
-
-**Supuestos:** el ruido del sensor es 10% de cada población (mínimo de escala
-1 UFC/mL); `R` se conoce porque los datos son sintéticos. `Q` vale 2% de la
-predicción por paso. Estos valores son ilustrativos y requieren calibración
-con datos reales. El estado negativo se proyecta a cero; los intervalos
-son aproximados cerca de ese límite.
-
-**Pendiente del equipo:** Euler tiene un desfase temporal en la concentración.
-El filtro sigue el calendario que Euler entrega hoy para comparar estados del
-mismo experimento. Hay que repetir resultados cuando la persona 1 corrija Euler.
-Esta parte no toma decisiones de tratamiento ni integra Bayes.
+El notebook también pronostica S, T y R a 24 horas desde el día 10, sin usar
+mediciones futuras, y compara la fracción resistente prevista con Euler.

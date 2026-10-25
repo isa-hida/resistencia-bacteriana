@@ -1,6 +1,8 @@
 """Persona 3: estimar S, T y R con un filtro de Kalman extendido (EKF)."""
 import numpy as np
-from .euler_model import load_params, simulate, step
+from .euler_model import load_params, simulate, step, concentracion
+from pathlib import Path
+import matplotlib.pyplot as plt
 
 
 def generar_mediciones(verdad, H, ruido=0.10, semilla=0):
@@ -54,27 +56,42 @@ def filtrar(t, medidas, R, H, parametros, concentraciones, x0, P0, q_rel=0.02):
     return estimados, covarianzas
 
 
+def predecir(estado, t_inicio, pasos, dt, parametros, escenario):
+    """Pronostica pasos futuros con Euler, sin usar mediciones futuras."""
+    x = estado.copy()
+    for i in range(pasos):
+        C = concentracion(t_inicio + i * dt, escenario)
+        x = step(x, C, dt, parametros)
+    return x
+
+
 def rmse(verdad, valores):
     """Error cuadrático medio por población, en UFC/mL."""
     return np.sqrt(np.mean((verdad - valores)**2, axis=0))
 
 
-def ejecutar_experimento(medir_T=True, ruido=0.10, semilla=0, q_rel=0.02):
+def ejecutar_experimento(medir_T=False, ruido=None, semilla=0, q_rel=None, factor_R=1.0):
     """Conecta el EKF con el escenario D de Euler; H=I o mide solo S y R."""
     parametros, escenario = load_params('D')
+    if ruido is None:
+        ruido = escenario['kalman']['sigma_obs_rel']
+    if q_rel is None:
+        q_rel = escenario['kalman']['q_rel']
     t, verdad, C, _ = simulate('D', parametros, escenario)
     H = np.eye(3) if medir_T else np.array([[1., 0., 0.], [0., 0., 1.]])
     medidas, R = generar_mediciones(verdad, H, ruido, semilla)
+    if factor_R <= 0:
+        raise ValueError('factor_R debe ser positivo')
+    R_filtro = factor_R * R  # varianza supuesta por el filtro; R es la real sintética
     x0 = verdad[0] * np.array([1.2, 0.8, 1.3])  # estimación inicial imperfecta
     P0 = np.diag((0.5 * np.maximum(x0, 1.0))**2)
-    estimados, P = filtrar(t, medidas, R, H, parametros, C, x0, P0, q_rel)
+    estimados, P = filtrar(t, medidas, R_filtro, H, parametros, C, x0, P0, q_rel)
     return {'t': t, 'verdad': verdad, 'medidas': medidas, 'estimados': estimados,
-            'P': P, 'H': H, 'R': R}
+            'P': P, 'H': H, 'R': R, 'R_filtro': R_filtro}
 
 
 def graficar(resultado):
     """Una gráfica por población: verdad, medición, EKF e incertidumbre."""
-    import matplotlib.pyplot as plt
     t, verdad = resultado['t'], resultado['verdad']
     medidas, estimados = resultado['medidas'], resultado['estimados']
     P = resultado['P']
@@ -97,25 +114,20 @@ def graficar(resultado):
 
 
 def main():
-    from pathlib import Path
-    import matplotlib.pyplot as plt
     carpeta = Path(__file__).resolve().parents[1] / 'figures/persona3'
     carpeta.mkdir(parents=True, exist_ok=True)
     datos = carpeta.parents[1] / 'data/persona3'
     datos.mkdir(parents=True, exist_ok=True)
-    for nombre, medir_T in [('base', True), ('sin_medir_T', False)]:
-        r = ejecutar_experimento(medir_T=medir_T)
-        print(nombre, 'RMSE EKF [S,T,R]:', rmse(r['verdad'], r['estimados']))
-        # Una tabla por caso: la columna T_medida queda vacía si T no se observa.
-        medidas = np.full_like(r['verdad'], np.nan)
-        for j, fila in enumerate(r['H']):
-            medidas[:, np.argmax(fila)] = r['medidas'][:, j]
-        tabla = np.column_stack([r['t'], r['verdad'], medidas, r['estimados']])
-        np.savetxt(datos / f'{nombre}.csv', tabla, delimiter=',', comments='',
-                   header='dias,S_real,T_real,R_real,S_medida,T_medida,R_medida,S_EKF,T_EKF,R_EKF')
-        figura = graficar(r)
-        figura.savefig(carpeta / f'{nombre}.png', dpi=150)
-        plt.close(figura)
+    r = ejecutar_experimento(medir_T=False)
+    print('RMSE EKF [S,T,R]:', rmse(r['verdad'], r['estimados']))
+    medidas = np.full_like(r['verdad'], np.nan)
+    medidas[:, 0], medidas[:, 2] = r['medidas'][:, 0], r['medidas'][:, 1]
+    tabla = np.column_stack([r['t'], r['verdad'], medidas, r['estimados']])
+    np.savetxt(datos / 'sin_medir_T.csv', tabla, delimiter=',', comments='',
+               header='dias,S_real,T_real,R_real,S_medida,T_medida,R_medida,S_EKF,T_EKF,R_EKF')
+    figura = graficar(r)
+    figura.savefig(carpeta / 'sin_medir_T.png', dpi=150)
+    plt.close(figura)
 
 
 if __name__ == '__main__':
