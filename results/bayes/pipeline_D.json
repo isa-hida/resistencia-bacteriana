@@ -1,0 +1,24 @@
+{
+  "escenario": "D",
+  "dias": 20,
+  "origen": "simulacion didactica, no calibracion experimental",
+  "tasas": {
+    "muST": 0.0001,
+    "muTR": 1e-05
+  },
+  "probabilidades": {
+    "ProbTolerancia": 0.7524109646717494,
+    "ProbResistencia": 0.6971372361281609
+  },
+  "metricas": {
+    "fraccion_R_final": 0.1356019875698651,
+    "t_dominancia_R_dias": null,
+    "t_extincion_S_dias": null
+  },
+  "fraccion_R_EKF": 0.13747543743477958,
+  "RMSE": [
+    39800.42267445415,
+    683996.1029405112,
+    50204.242736017535
+  ]
+}
