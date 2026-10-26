@@ -7,34 +7,18 @@
     "muTR": 1e-05
   },
   "probabilidades": {
-    "ProbTolerancia": 0.7524109372502658,
-    "ProbResistencia": 0.6971509796505794
+    "ProbTolerancia": 0.7524109646717494,
+    "ProbResistencia": 0.6971372361281609
   },
   "metricas": {
-    "fraccion_R_final": 0.13559545881045348,
+    "fraccion_R_final": 0.1356019875698651,
     "t_dominancia_R_dias": null,
     "t_extincion_S_dias": null
   },
-  "fraccion_R_EKF": 0.1374687754806335,
+  "fraccion_R_EKF": 0.13747543743477958,
   "RMSE": [
-    39800.42207101731,
-    684019.7792618148,
-    50202.913448860985
-  ],
-  "seleccion_bayesiana": {
-    "evidencia": {
-      "Concentracion": 1,
-      "Duracion": 1,
-      "TolerPrevia": 0,
-      "TasaMutacion": 0,
-      "CosteFitness": 1,
-      "Frecuencia": 1
-    },
-    "ciclos_dia": 1.0,
-    "riesgos": [
-      0.7467735975281886,
-      0.6971509796505794
-    ],
-    "riesgo_elegido": 0.6971509796505794
-  }
+    39800.42267445415,
+    683996.1029405112,
+    50204.242736017535
+  ]
 }
