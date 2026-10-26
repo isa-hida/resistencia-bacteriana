@@ -2,6 +2,27 @@
 
 Proyecto del caso de estudio "De la dosis a la resistencia".
 
+## Componente bayesiano sencillo
+
+El archivo principal es `src/bayes_net.py` (103 líneas, con comentarios y espacios).
+Usa los seis factores del caso y la regla de probabilidad total. No requiere pgmpy,
+muestreo de parámetros ni un motor de inferencia propio: suma las filas compatibles
+con la evidencia. Las CPT se calculan con 64 simulaciones del Euler del equipo.
+
+- [Cuaderno de la analista](notebooks/05_analisis_bayesiano.ipynb)
+- [CPT de simulación](data/bayes/cpt_simuladas.csv) y [fuentes y supuestos](data/bayes/fuentes.csv)
+
+```powershell
+python -m pip install -r requirements-bayes.txt
+python -m src.bayes_net
+python -m src.pipeline --escenario B
+python -m unittest discover -s tests -v
+```
+
+Las probabilidades provienen de un modelo didáctico de simulación, no de mediciones
+clínicas. Los parámetros están en `params.yaml`. Si se cambian, ejecutar de nuevo
+`src.bayes_net` y el cuaderno. El escenario E requiere datos reales compatibles.
+
 ## Instalación
 ```bash
 python -m venv .venv && source .venv/bin/activate   # en Windows: .venv\Scripts\activate

@@ -20,7 +20,8 @@ def _num(v):
 
 
 def load_params(scenario="B"):
-    cfg = _num(yaml.safe_load(open(ROOT / "params.yaml")))
+    with open(ROOT / "params.yaml", encoding="utf-8") as archivo:
+        cfg = _num(yaml.safe_load(archivo))
     p = dict(cfg["nominal"])
     sc = dict(cfg["scenarios"][scenario])
     p.update(sc.get("override", {}))
@@ -31,7 +32,10 @@ def concentracion(t_dias, sc):
     if sc["esquema"] == "constante":
         return sc["C"]
     # +1e-9 dias compensa la deriva de punto flotante (si no, se pierde un paso de exposicion)
-    hora = ((t_dias + 1e-9) % 1.0) * 24.0
+    periodo = sc.get("periodo_horas", 24.0)
+    if periodo <= 0 or not 0 <= sc["horas_exposicion"] <= periodo:
+        raise ValueError("Periodo positivo y exposicion entre cero y el periodo.")
+    hora = ((t_dias + 1e-9) % (periodo / 24.0)) * 24.0
     return sc["C"] if hora < sc["horas_exposicion"] else 0.0
 
 
