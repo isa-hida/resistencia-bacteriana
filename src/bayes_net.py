@@ -1,7 +1,3 @@
-"""Bayes sencillo: seis factores -> adquisicion nueva de resistencia.
-CPT calculadas con Euler y un supuesto de conteo Poisson, no datos clinicos.
-Estados: 0/1 son los niveles de params.yaml; TasaMutacion=1 es el perfil C.
-"""
 from pathlib import Path
 from itertools import product
 import csv
