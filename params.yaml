@@ -41,7 +41,21 @@ scenarios:
       sigma_obs_rel: 0.10   # error relativo de conteo de placas
       q_rel: 0.02           # ruido de proceso relativo
   E:   # datos de literatura (pendiente: obtener referencias)
-    nota: "Completar con datos de ALE con ofloxacino"
+    nota: "Datos reales de evolución adaptativa con ofloxacino"
+    fuente: "Mohiuddin et al. (2025), Figura 1A"
+    antibiotico: ofloxacino
+    concentracion_ug_ml: 5.0
+    dt_horas: 0.5
+    duracion_dias: 22
+    esquema: ciclico
+    C: 5.0
+    periodo_horas: 24.0
+    horas_exposicion: 7.0
+    horas_recuperacion: 17.0
+    tipo_datos: supervivencia_observada
+    poblaciones: [S1, S2, S3, S4, S5, S6, S7, S8]
+    datos: "data/literatura/Figure1a.xlsx"
+    calibracion: pendiente
 
 # Bayes sencillo: niveles de un experimento didactico, no umbrales clinicos.
 bayes:
