@@ -2,8 +2,6 @@
 from pathlib import Path
 import numpy as np
 import yaml
-import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,7 +20,8 @@ def _num(v):
 
 
 def load_params(scenario="B"):
-    cfg = _num(yaml.safe_load(open(ROOT / "params.yaml")))
+    with open(ROOT / "params.yaml", encoding="utf-8") as archivo:
+        cfg = _num(yaml.safe_load(archivo))
     p = dict(cfg["nominal"])
     sc = dict(cfg["scenarios"][scenario])
     p.update(sc.get("override", {}))
@@ -32,7 +31,11 @@ def load_params(scenario="B"):
 def concentracion(t_dias, sc):
     if sc["esquema"] == "constante":
         return sc["C"]
-    hora = (t_dias % 1.0) * 24.0
+    # +1e-9 dias compensa la deriva de punto flotante (si no, se pierde un paso de exposicion)
+    periodo = sc.get("periodo_horas", 24.0)
+    if periodo <= 0 or not 0 <= sc["horas_exposicion"] <= periodo:
+        raise ValueError("Periodo positivo y exposicion entre cero y el periodo.")
+    hora = ((t_dias + 1e-9) % (periodo / 24.0)) * 24.0
     return sc["C"] if hora < sc["horas_exposicion"] else 0.0
 
 
@@ -61,7 +64,7 @@ def simulate(scenario="B", p=None, sc=None):
     C = np.zeros(n)
     X[0] = [p["x0"]["S"], p["x0"]["T"], p["x0"]["R"]]
     for k in range(1, n):
-        C[k] = concentracion(t[k], sc)
+        C[k] = concentracion(t[k - 1], sc)   # C vigente durante el paso k-1 -> k (inicio del paso)
         X[k] = step(X[k - 1], C[k], dt, p)
     return t, X, C, dt
 

@@ -2,6 +2,27 @@
 
 Proyecto del caso de estudio "De la dosis a la resistencia".
 
+## Componente bayesiano sencillo
+
+El archivo principal es `src/bayes_net.py` (103 líneas, con comentarios y espacios).
+Usa los seis factores del caso y la regla de probabilidad total. No requiere pgmpy,
+muestreo de parámetros ni un motor de inferencia propio: suma las filas compatibles
+con la evidencia. Las CPT se calculan con 64 simulaciones del Euler del equipo.
+
+- [Cuaderno de la analista](notebooks/05_analisis_bayesiano.ipynb)
+- [CPT de simulación](data/bayes/cpt_simuladas.csv) y [fuentes y supuestos](data/bayes/fuentes.csv)
+
+```powershell
+python -m pip install -r requirements-bayes.txt
+python -m src.bayes_net
+python -m src.pipeline --escenario B
+python -m unittest discover -s tests -v
+```
+
+Las probabilidades provienen de un modelo didáctico de simulación, no de mediciones
+clínicas. Los parámetros están en `params.yaml`. Si se cambian, ejecutar de nuevo
+`src.bayes_net` y el cuaderno. El escenario E requiere datos reales compatibles.
+
 ## Instalación
 ```bash
 python -m venv .venv && source .venv/bin/activate   # en Windows: .venv\Scripts\activate
@@ -11,7 +32,7 @@ pip install -r requirements.txt
 ## Ejecución rápida
 ```bash
 python -m src.euler_model      # escenario B por defecto, guarda figures/euler_B.png
-python -m src.kalman           # escenario D (demo), guarda figures/kalman_D.png
+python -m src.kalman           # escenario D nominal: figuras en figures/persona3/
 python -m src.bayes_net        # consulta de ejemplo sobre el DAG
 python -m src.pipeline         # integración completa
 ```
@@ -21,7 +42,8 @@ python -m src.pipeline         # integración completa
 |---|---|---|
 | `src/euler_model.py` | Ecuaciones en diferencias (S, T, R) | Coordinador/a de modelo |
 | `src/bayes_net.py` | DAG y tablas condicionales | Analista bayesiano/a |
-| `src/kalman.py` | Filtro de Kalman (EKF) | Ingeniero/a de estimación |
+| `src/filtro_kalman.py` | Filtro de Kalman (EKF) | Ingeniero/a de estimación |
+| `src/kalman.py` | Entrada compatible con el pipeline | Ingeniero/a de estimación |
 | `src/pipeline.py` | Bayes → Euler → Kalman → decisión | Todos (fase 5) |
 | `params.yaml` | Parámetros nominales y escenarios A–E | Analista de decisiones |
 | `bitacoras/` | Una bitácora por integrante | Cada quien |
@@ -40,3 +62,13 @@ python -m src.pipeline         # integración completa
 - Las poblaciones abarcan ~7 órdenes de magnitud: en el filtro de Kalman, cuidado con la
   escala de Q y R (ver preguntas abiertas 3 y 4 del documento).
 - Las referencias `[citation:N]` del PDF no tienen bibliografía: pídanla al docente.
+
+## Figuras y datos vigentes
+
+- `figures/euler_A.png`, `euler_B.png`, `euler_C.png`: figuras de la parte de Euler.
+- `figures/persona3/sin_medir_T.png`: Kalman **nominal**, midiendo S y R.
+- `figures/persona3/ajustado_sin_T.png`: ajuste experimental de Q y R, generado
+  al ejecutar [el notebook de Kalman](notebooks/04_kalman_estimacion.ipynb).
+- `data/persona3/sin_medir_T.csv`: datos **nominales**.
+- `data/persona3/ajustado_sin_T.csv`: datos del ajuste experimental sin medir T.
+

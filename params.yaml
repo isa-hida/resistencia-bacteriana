@@ -24,13 +24,13 @@ scenarios:
     esquema: ciclico
     C: 5.0
     horas_exposicion: 3
-  C:   # mutación metabólica (muST sube, muTR baja)
-    dt_horas: 0.5
-    duracion_dias: 20
+  C:   # mutación metabólica (muST sube x10, muTR baja x10 respecto a B)
+    dt_horas: 0.0625
+    duracion_dias: 100
     esquema: ciclico
     C: 5.0
     horas_exposicion: 3
-    override: {muST: 1.0e-3, muTR: 1.0e-6}   # AJUSTAR y justificar
+    override: {muST: 1.0e-3, muTR: 1.0e-6}
   D:   # estimación con Kalman
     dt_horas: 0.5
     duracion_dias: 20
@@ -41,4 +41,38 @@ scenarios:
       sigma_obs_rel: 0.10   # error relativo de conteo de placas
       q_rel: 0.02           # ruido de proceso relativo
   E:   # datos de literatura (pendiente: obtener referencias)
-    nota: "Completar con datos de ALE con ofloxacino"
+    nota: "Datos reales de evolución adaptativa con ofloxacino"
+    fuente: "Mohiuddin et al. (2025), Figura 1A"
+    antibiotico: ofloxacino
+    concentracion_ug_ml: 5.0
+    dt_horas: 0.5
+    duracion_dias: 22
+    esquema: ciclico
+    C: 5.0
+    periodo_horas: 24.0
+    horas_exposicion: 7.0
+    horas_recuperacion: 17.0
+    tipo_datos: supervivencia_observada
+    poblaciones: [S1, S2, S3, S4, S5, S6, S7, S8]
+    datos: "data/literatura/Figure1a.xlsx"
+    calibracion: pendiente
+
+# Bayes sencillo: niveles de un experimento didactico, no umbrales clinicos.
+bayes:
+  niveles:
+    Concentracion: [1.0, 5.0]
+    Duracion: [10.0, 20.0]
+    Frecuencia: [0.5, 1.0]       # ciclos por dia; pulsos de 3 horas
+    TolerPrevia: [0.0001, 0.01]  # T/(S+T) al inicio
+    TasaMutacion: [nominal, metabolico] # 1: muST sube y muTR baja (escenario C)
+    CosteFitness: [0.0, 0.2]     # 1-rR/rS
+  prior_estado_1: 0.5           # escenarios equiprobables por supuesto didactico
+  dt_horas: 0.5
+  horas_exposicion: 3.0
+  volumen_ml: 0.001             # volumen efectivo del evento de adquisicion
+  semilla: 19
+  factores_Q: [0.25, 1.0]      # ejercicio cruzado de Kalman
+  factores_R: [0.5, 1.0, 2.0]
+  factor_inicial_kalman: [1.2, 0.8, 1.3]
+  sd_inicial_kalman: 0.5
+  perfil_escenario: {A: 0, B: 0, C: 1, D: 0}
